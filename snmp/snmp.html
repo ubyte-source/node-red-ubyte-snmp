@@ -1,0 +1,815 @@
+<style id="node-red-ubyte-snmp">
+  .node-red-ubyte-snmp-style-hidden {
+    display: none !important;
+  }
+</style>
+
+<script type="text/javascript">
+  const uByteSNMPVersionUI = function (version) {
+    const isV3 = version === "v3";
+    $(".node-red-ubyte-snmp-row-snmpv1v2").toggleClass("node-red-ubyte-snmp-style-hidden", isV3);
+    $(".node-red-ubyte-snmp-row-snmpv3").toggleClass("node-red-ubyte-snmp-style-hidden", false === isV3);
+  };
+  const uByteSNMPAuthUI = function (version, auth) {
+    if (version === "v3") {
+      const isAuthPriv = auth !== "authPriv";
+      const isNoAuthNoPriv = auth === "noAuthNoPriv";
+      $(".node-red-ubyte-snmp-row-snmpv3-auth").toggleClass("node-red-ubyte-snmp-style-hidden", isNoAuthNoPriv);
+      $(".node-red-ubyte-snmp-row-snmpv3-priv").toggleClass("node-red-ubyte-snmp-style-hidden", isAuthPriv);
+    }
+  };
+  const uByteInitializeSNMPConfig = function (node) {
+    const value = node.auth || "authPriv";
+    $("#node-input-version").change();
+    $("#node-input-auth").val(value).change();
+  };
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("SNMP", {
+    category: "network",
+    color: "#faffbf",
+    defaults: {
+      host: {
+        value: "127.0.0.1"
+      },
+      port: {
+        value: "161"
+      },
+      version: {
+        value: "v2c",
+        required: true
+      },
+      timeout: {
+        value: 5
+      },
+      community: {
+        value: "public"
+      },
+      auth: {
+        value: "",
+        required: true
+      },
+      authprot: {
+        value: "MD5",
+        required: true
+      },
+      privprot: {
+        value: "DES",
+        required: true
+      },
+      name: {
+        value: ""
+      },
+      username: {
+        value: ""
+      },
+      authkey: {
+        value: ""
+      },
+      privkey: {
+        value: ""
+      },
+      oids: {
+        value: ""
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "icon.png",
+    label: function () {
+      return this.name || "SNMP";
+    },
+    oneditprepare: function () {
+      uByteInitializeSNMPConfig(this);
+      $("#node-input-version").change(function () {
+        uByteSNMPVersionUI(this.value)
+      });
+      $("#node-input-auth").change(function () {
+        const value = $("#node-input-version").val();
+        uByteSNMPAuthUI(value, this.value)
+      });
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="SNMP">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
+    <input type="text" id="node-input-host" placeholder="ip address" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Port</label>
+    <input type="text" id="node-input-port" placeholder="161" style="width:58px" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-version"><i class="fa fa-bookmark"></i> Version</label>
+    <select type="text" id="node-input-version" style="width:180px">
+      <option value="v1">v1</option>
+      <option value="v2c">v2c</option>
+      <option value="v3">v3</option>
+    </select>
+    <label for="node-input-timeout" style="width:75px;text-align:right">Timeout</label>
+    <input type="text" id="node-input-timeout" placeholder="sec" style="width:58px" />
+  </div>
+  <div class="form-row  node-red-ubyte-snmp-row-snmpv1v2">
+    <label for="node-input-community"><i class="fa fa-user"></i> Community</label>
+    <input type="text" id="node-input-community" placeholder="public" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username" placeholder="username" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-auth"><i class="fa fa-user-secret"></i> Auth.</label>
+    <select type="text" id="node-input-auth" style="width:180px">
+      <option value="noAuthNoPriv">noAuthNoPriv</option>
+      <option value="authNoPriv">authNoPriv</option>
+      <option value="authPriv">authPriv</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authProtocol"><i class="fa fa-shield"></i> Auth.Prot.</label>
+    <select type="text" id="node-input-authProtocol" style="width:180px">
+      <option value="MD5">MD5</option>
+      <option value="SHA">SHA</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authKey"><i class="fa fa-key"></i> Auth.Key</label>
+    <input
+      type="password"
+      id="node-input-authKey"
+      placeholder="Authentication key"
+    />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privProtocol"><i class="fa fa-shield"></i> Priv.Prot.</label>
+    <select type="text" id="node-input-privProtocol" style="width:180px">
+      <option value="DES">DES</option>
+      <option value="AES">AES</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privKey"><i class="fa fa-key"></i> Priv.Key</label>
+    <input type="password" id="node-input-privKey" placeholder="Encryption key" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-oids"><i class="fa fa-tags"></i> OIDs</label>
+    <textarea rows="4" ols="60" id="node-input-oids" placeholder="e.g. 1.3.6.1.2.1.1.5.0" style="width:70%"></textarea>
+  </div>
+  <div class="form-tips">Tip: Multiple OIDs can be separated by commas.</div>
+</script>
+
+<script type="text/html" data-help-name="SNMP">
+  <p><b>SNMP OID Fetcher Tool Documentation</b></p>
+  <p><b>Description</b>: This document offers an in-depth look at the SNMP OID Fetcher Tool, tailored for retrieving SNMP Object Identifiers (OIDs) or lists of OIDs, based on detailed input parameters.</p>
+  <p><b>How It Works</b>: Activated by any input, the tool processes the provided parameters to fetch the specified OIDs.</p>
+  <p><b>Input Parameters</b>:</p>
+  <p><code>msg.host</code> - The network host address.</p>
+  <p><code>msg.port</code> - The network port.</p>
+  <p><code>msg.community</code> - The SNMP community string.</p>
+  <p><code>msg.username</code> - (For SNMP V3 only) The username for authentication.</p>
+  <p><code>msg.auth</code> - (For SNMP V3 only) Specifies the security level for SNMP V3 communication. The options include 'noAuthNoPriv', 'authNoPriv', and 'authPriv'. 'noAuthNoPriv' indicates that no authentication and no encryption are applied. 'authNoPriv' applies authentication for message integrity without encryption, using the specified <code>msg.authProtocol</code> and <code>msg.authkey</code>. 'authPriv' adds encryption to authentication, utilizing both the <code>msg.authProtocol</code> with <code>msg.authkey</code> for authentication and the <code>msg.privProtocol</code> with <code>msg.privkey</code> for message encryption, ensuring both the integrity and confidentiality of the SNMP messages.</p>
+  <p><code>msg.authProtocol</code> - (For SNMP V3 only) Defines the authentication protocol used to verify the integrity and authenticity of the messages. This setting determines the method by which the <code>msg.authkey</code> is applied to secure the communication. Common options include MD5 (Message-Digest Algorithm 5) and SHA (Secure Hash Algorithm), which provide a way to check that the message has not been altered, thereby safeguarding the integrity of the SNMP communication.</p>
+  <p><code>msg.authKey</code> - (For SNMP V3 only) The key for digest-based message integrity.</p>
+  <p><code>msg.privProtocol</code> - (For SNMP V3 only) Specifies the encryption protocol used for securing messages. Common protocols include DES (Data Encryption Standard) and AES (Advanced Encryption Standard). This setting determines how the <code>msg.privkey</code> is utilized to encrypt SNMP V3 messages, ensuring the confidentiality of the data exchanged between the SNMP manager and the agent.</p>
+  <p><code>msg.privKey</code> - (For SNMP V3 only) The key for message encryption.</p>
+  <p><code>msg.oids</code> - Specifies the OIDs to be fetched, separated by commas without any spaces.</p>
+  <p><b>OID Format</b>: OIDs must be numeric. The prefix "iso." is equivalent to "1".</p>
+  <p><b>Output</b>: The tool provides output in <code>msg.payload</code>, containing the data of the fetched OIDs, along with the original <code>msg.oids</code> request.</p>
+</script>
+
+<script type="text/html" data-template-name="SNMP Set">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
+    <input type="text" id="node-input-host" placeholder="ip address" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Port</label>
+    <input type="text" id="node-input-port" placeholder="161" style="width:58px" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-version"><i class="fa fa-bookmark"></i> Version</label>
+    <select type="text" id="node-input-version" style="width:180px">
+      <option value="v1">v1</option>
+      <option value="v2c">v2c</option>
+      <option value="v3">v3</option>
+    </select>
+    <label for="node-input-timeout" style="width:75px;text-align:right">Timeout</label>
+    <input type="text" id="node-input-timeout" placeholder="sec" style="width:58px" />
+  </div>
+  <div class="form-row  node-red-ubyte-snmp-row-snmpv1v2">
+    <label for="node-input-community"><i class="fa fa-user"></i> Community</label>
+    <input type="text" id="node-input-community" placeholder="public" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username" placeholder="username" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-auth"><i class="fa fa-user-secret"></i> Auth.</label>
+    <select type="text" id="node-input-auth" style="width:180px">
+      <option value="noAuthNoPriv">noAuthNoPriv</option>
+      <option value="authNoPriv">authNoPriv</option>
+      <option value="authPriv">authPriv</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authProtocol"><i class="fa fa-shield"></i> Auth.Prot.</label>
+    <select type="text" id="node-input-authProtocol" style="width:180px">
+      <option value="MD5">MD5</option>
+      <option value="SHA">SHA</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authKey"><i class="fa fa-key"></i> Auth.Key</label>
+    <input
+      type="password"
+      id="node-input-authKey"
+      placeholder="Authentication key"
+    />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privProtocol"><i class="fa fa-shield"></i> Priv.Prot.</label>
+    <select type="text" id="node-input-privProtocol" style="width:180px">
+      <option value="DES">DES</option>
+      <option value="AES">AES</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privKey"><i class="fa fa-key"></i> Priv.Key</label>
+    <input type="password" id="node-input-privKey" placeholder="Encryption key" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-varbinds"><i class="fa fa-tags"></i> Varbinds</label>
+    <textarea rows="10" cols="60" id="node-input-varbinds" placeholder='e.g. [{ "oid":"1.3.6.1.2.1.1.5.0","type":"OctetString","value":"host1"},{"oid":"1.3.6.1.2.1.1.6.0","type":"OctetString",value:"somewhere"}]' style="width:70%"></textarea>
+  </div>
+  <div class="form-tips">
+    Tip: Numeric inputs must be numbers not strings, e.g. 1 not "1".
+  </div>
+</script>
+
+<script type="text/html" data-help-name="SNMP Set">
+  <p><b>SNMP Set Tool Documentation</b></p>
+  <p><b>Description</b>: This document provides details on the SNMP Set Tool, designed for setting specific values on network devices via SNMP. Triggered by any form of input, it utilizes various parameters to conduct SNMP SET operations effectively.</p>
+  <p><b>Usage</b>: Activated by input triggers, this tool facilitates modifications to device settings using SNMP OIDs.</p>
+  <p><b>Input Parameters</b>:</p>
+  <p><code>msg.host</code> - The network host address.</p>
+  <p><code>msg.port</code> - The network port.</p>
+  <p><code>msg.community</code> - Defines the SNMP community string for access.</p>
+  <p><code>msg.username</code> - (For SNMP V3 only) The username required for authentication.</p>
+  <p><code>msg.auth</code> - (For SNMP V3 only) Specifies the security level for SNMP V3 communication. The options include 'noAuthNoPriv', 'authNoPriv', and 'authPriv'. 'noAuthNoPriv' indicates that no authentication and no encryption are applied. 'authNoPriv' applies authentication for message integrity without encryption, using the specified <code>msg.authProtocol</code> and <code>msg.authkey</code>. 'authPriv' adds encryption to authentication, utilizing both the <code>msg.authProtocol</code> with <code>msg.authkey</code> for authentication and the <code>msg.privProtocol</code> with <code>msg.privkey</code> for message encryption, ensuring both the integrity and confidentiality of the SNMP messages.</p>
+  <p><code>msg.authProtocol</code> - (For SNMP V3 only) Defines the authentication protocol used to verify the integrity and authenticity of the messages. This setting determines the method by which the <code>msg.authkey</code> is applied to secure the communication. Common options include MD5 (Message-Digest Algorithm 5) and SHA (Secure Hash Algorithm), which provide a way to check that the message has not been altered, thereby safeguarding the integrity of the SNMP communication.</p>
+  <p><code>msg.authKey</code> - (For SNMP V3 only) The key for digest-based message integrity.</p>
+  <p><code>msg.privProtocol</code> - (For SNMP V3 only) Specifies the encryption protocol used for securing messages. Common protocols include DES (Data Encryption Standard) and AES (Advanced Encryption Standard). This setting determines how the <code>msg.privkey</code> is utilized to encrypt SNMP V3 messages, ensuring the confidentiality of the data exchanged between the SNMP manager and the agent.</p>
+  <p><code>msg.privKey</code> - (For SNMP V3 only) The key for message encryption.</p>
+  <p><code>msg.varbinds</code> - Specifies the variables to be set, in the form of an array of JSON objects, each containing an OID, type, and value. For example:</p>
+  <pre>[{"oid":"1.3.6.1.2.1.1.5.0","type":"OctetString","value":"host1"},{"oid":...}]</pre>
+  <p><b>Data Types and Formats</b>: Numeric inputs must be actual numbers, not strings (e.g., use 1, not "1"). OIDs must be numeric, with "iso." being equivalent to "1".</p>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("SNMP Set", {
+    category: "network",
+    color: "#faffbf",
+    defaults: {
+      host: {
+        value: "127.0.0.1"
+      },
+      port: {
+        value: "161"
+      },
+      version: {
+        value: "v2c",
+        required: true
+      },
+      timeout: {
+        value: 5
+      },
+      community: {
+        value: "public"
+      },
+      auth: {
+        value: "",
+        required: true
+      },
+      authprot: {
+        value: "MD5",
+        required: true
+      },
+      privprot: {
+        value: "DES",
+        required: true
+      },
+      name: {
+        value: ""
+      },
+      username: {
+        value: ""
+      },
+      authkey: {
+        value: ""
+      },
+      privkey: {
+        value: ""
+      },
+      varbinds: {
+        value: ""
+      }
+    },
+    inputs: 1,
+    outputs: 0,
+    icon: "icon.png",
+    label: function () {
+      return this.name || "SNMP Set";
+    },
+    oneditprepare: function () {
+      uByteInitializeSNMPConfig(this);
+      $("#node-input-version").change(function () {
+        uByteSNMPVersionUI(this.value)
+      });
+      $("#node-input-auth").change(function () {
+        const value = $("#node-input-version").val();
+        uByteSNMPAuthUI(value, this.value)
+      });
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="SNMP Table">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
+    <input type="text" id="node-input-host" placeholder="ip address" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Port</label>
+    <input type="text" id="node-input-port" placeholder="161" style="width:58px" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-version"><i class="fa fa-bookmark"></i> Version</label>
+    <select type="text" id="node-input-version" style="width:180px">
+      <option value="v1">v1</option>
+      <option value="v2c">v2c</option>
+      <option value="v3">v3</option>
+    </select>
+    <label for="node-input-timeout" style="width:75px;text-align:right">Timeout</label>
+    <input type="text" id="node-input-timeout" placeholder="sec" style="width:58px" />
+  </div>
+  <div class="form-row  node-red-ubyte-snmp-row-snmpv1v2">
+    <label for="node-input-community"><i class="fa fa-user"></i> Community</label>
+    <input type="text" id="node-input-community" placeholder="public" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username" placeholder="username" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-auth"><i class="fa fa-user-secret"></i> Auth.</label>
+    <select type="text" id="node-input-auth" style="width:180px">
+      <option value="noAuthNoPriv">noAuthNoPriv</option>
+      <option value="authNoPriv">authNoPriv</option>
+      <option value="authPriv">authPriv</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authProtocol"><i class="fa fa-shield"></i> Auth.Prot.</label>
+    <select type="text" id="node-input-authProtocol" style="width:180px">
+      <option value="MD5">MD5</option>
+      <option value="SHA">SHA</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authKey"><i class="fa fa-key"></i> Auth.Key</label>
+    <input type="password" id="node-input-authKey" placeholder="Authentication key" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privProtocol"><i class="fa fa-shield"></i> Priv.Prot.</label>
+    <select type="text" id="node-input-privProtocol" style="width:180px">
+      <option value="DES">DES</option>
+      <option value="AES">AES</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privKey"><i class="fa fa-key"></i> Priv.Key</label>
+    <input type="password" id="node-input-privKey" placeholder="Encryption key"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-oid"><i class="fa fa-tags"></i> OID</label>
+    <input type="text" id="node-input-oid" placeholder="e.g. 1.3.6.1.2.1.1.5.0" />
+  </div>
+  <div class="form-tips">Tip: ONLY accepts a single OID.</div>
+</script>
+
+<script type="text/html" data-help-name="SNMP Table">
+  <p><b>SNMP OID Table Fetcher Tool Documentation</b></p>
+  <p><b>Description</b>: This guide details the SNMP OID Table Fetcher Tool, which is designed to retrieve complete tables of SNMP Object Identifiers (OIDs) based on specified inputs.</p>
+  <p><b>Activation</b>: The tool is initiated by any input, offering a responsive and straightforward activation mechanism.</p>
+  <p><b>Input Parameters</b>:</p>
+  <p><code>msg.host</code> - The network host address.</p>
+  <p><code>msg.port</code> - The network port.</p>
+  <p><code>msg.community</code> - Defines the SNMP community string for access control.</p>
+  <p><code>msg.username</code> - (For SNMP V3 only) Identifies the username for authentication.</p>
+  <p><code>msg.auth</code> - (For SNMP V3 only) Specifies the security level for SNMP V3 communication. The options include 'noAuthNoPriv', 'authNoPriv', and 'authPriv'. 'noAuthNoPriv' indicates that no authentication and no encryption are applied. 'authNoPriv' applies authentication for message integrity without encryption, using the specified <code>msg.authProtocol</code> and <code>msg.authkey</code>. 'authPriv' adds encryption to authentication, utilizing both the <code>msg.authProtocol</code> with <code>msg.authkey</code> for authentication and the <code>msg.privProtocol</code> with <code>msg.privkey</code> for message encryption, ensuring both the integrity and confidentiality of the SNMP messages.</p>
+  <p><code>msg.authProtocol</code> - (For SNMP V3 only) Defines the authentication protocol used to verify the integrity and authenticity of the messages. This setting determines the method by which the <code>msg.authkey</code> is applied to secure the communication. Common options include MD5 (Message-Digest Algorithm 5) and SHA (Secure Hash Algorithm), which provide a way to check that the message has not been altered, thereby safeguarding the integrity of the SNMP communication.</p>
+  <p><code>msg.authKey</code> - (For SNMP V3 only) The key for digest-based message integrity.</p>
+  <p><code>msg.privProtocol</code> - (For SNMP V3 only) Specifies the encryption protocol used for securing messages. Common protocols include DES (Data Encryption Standard) and AES (Advanced Encryption Standard). This setting determines how the <code>msg.privkey</code> is utilized to encrypt SNMP V3 messages, ensuring the confidentiality of the data exchanged between the SNMP manager and the agent.</p>
+  <p><code>msg.privKey</code> - (For SNMP V3 only) The key for message encryption.</p>
+  <p><code>msg.oid</code> - Indicates the OID of the table to be fetched.</p>
+  <p><b>OID Format</b>: OIDs must be numeric. The prefix "iso." is equivalent to "1".</p>
+  <p><b>Output</b>: After a successful fetch, the tool outputs:</p>
+  <p><code>msg.payload</code> - Contains the data of the fetched OID table.</p>
+  <p><code>msg.oid</code> - The OID of the table that was requested.</p>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("SNMP Table", {
+    category: "network",
+    color: "#faffbf",
+    defaults: {
+      host: {
+        value: "127.0.0.1"
+      },
+      port: {
+        value: "161"
+      },
+      version: {
+        value: "v2c",
+        required: true
+      },
+      timeout: {
+        value: 5
+      },
+      community: {
+        value: "public"
+      },
+      auth: {
+        value: "",
+        required: true
+      },
+      authprot: {
+        value: "MD5",
+        required: true
+      },
+      privprot: {
+        value: "DES",
+        required: true
+      },
+      name: {
+        value: ""
+      },
+      username: {
+        value: ""
+      },
+      authkey: {
+        value: ""
+      },
+      privkey: {
+        value: ""
+      },
+      oid: {
+        value: ""
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "icon.png",
+    label: function () {
+      return this.name || "SNMP Table " + this.host;
+    },
+    oneditprepare: function () {
+      uByteInitializeSNMPConfig(this);
+      $("#node-input-version").change(function () {
+        uByteSNMPVersionUI(this.value)
+      });
+      $("#node-input-auth").change(function () {
+        const value = $("#node-input-version").val();
+        uByteSNMPAuthUI(value, this.value)
+      });
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="SNMP Subtree">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
+    <input type="text" id="node-input-host" placeholder="ip address" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Port</label>
+    <input type="text" id="node-input-port" placeholder="161" style="width:58px" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-version"><i class="fa fa-bookmark"></i> Version</label>
+    <select type="text" id="node-input-version" style="width:180px">
+      <option value="v1">v1</option>
+      <option value="v2c">v2c</option>
+      <option value="v3">v3</option>
+    </select>
+    <label for="node-input-timeout" style="width:75px;text-align:right">Timeout</label>
+    <input type="text" id="node-input-timeout" placeholder="sec" style="width:58px" />
+  </div>
+  <div class="form-row  node-red-ubyte-snmp-row-snmpv1v2">
+    <label for="node-input-community"><i class="fa fa-user"></i> Community</label>
+    <input type="text" id="node-input-community" placeholder="public" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username" placeholder="username" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-auth"><i class="fa fa-user-secret"></i> Auth.</label>
+    <select type="text" id="node-input-auth" style="width:180px">
+      <option value="noAuthNoPriv">noAuthNoPriv</option>
+      <option value="authNoPriv">authNoPriv</option>
+      <option value="authPriv">authPriv</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authProtocol"><i class="fa fa-shield"></i> Auth.Prot.</label>
+    <select type="text" id="node-input-authProtocol" style="width:180px">
+      <option value="MD5">MD5</option>
+      <option value="SHA">SHA</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authKey"><i class="fa fa-key"></i> Auth.Key</label>
+    <input type="password" id="node-input-authKey" placeholder="Authentication key" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privProtocol"><i class="fa fa-shield"></i> Priv.Prot.</label>
+    <select type="text" id="node-input-privProtocol" style="width:180px">
+      <option value="DES">DES</option>
+      <option value="AES">AES</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privKey"><i class="fa fa-key"></i> Priv.Key</label>
+    <input type="password" id="node-input-privKey" placeholder="Encryption key" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-oid"><i class="fa fa-tags"></i> OID</label>
+    <input type="text" id="node-input-oid" placeholder="e.g. 1.3.6.1.2.1.1.5.0" />
+  </div>
+  <div class="form-tips">Tip: ONLY accepts a single OID (node).</div>
+</script>
+
+<script type="text/html" data-help-name="SNMP Subtree">
+  <p><b>SNMP OID Subtree Fetcher Tool Documentation</b></p>
+  <p><b>Description</b>: This guide introduces the SNMP OID Subtree Fetcher Tool, crafted to query and collect all SNMP Object Identifiers (OIDs) starting from a specified base OID, including all subsequent OIDs in the subtree.</p>
+  <p><b>Activation and Operation</b>: Activated by any input, this tool begins fetching operations for the specified OID subtree upon receiving a trigger.</p>
+  <p><b>Input Parameters</b>:</p>
+  <p><code>msg.host</code> - The network host address.</p>
+  <p><code>msg.port</code> - The network port.</p>
+  <p><code>msg.community</code> - The SNMP community string used for access control.</p>
+  <p><code>msg.username</code> - (For SNMP V3 only) The username for SNMP V3 authentication.</p>
+  <p><code>msg.auth</code> - (For SNMP V3 only) Specifies the security level for SNMP V3 communication. The options include 'noAuthNoPriv', 'authNoPriv', and 'authPriv'. 'noAuthNoPriv' indicates that no authentication and no encryption are applied. 'authNoPriv' applies authentication for message integrity without encryption, using the specified <code>msg.authProtocol</code> and <code>msg.authkey</code>. 'authPriv' adds encryption to authentication, utilizing both the <code>msg.authProtocol</code> with <code>msg.authkey</code> for authentication and the <code>msg.privProtocol</code> with <code>msg.privkey</code> for message encryption, ensuring both the integrity and confidentiality of the SNMP messages.</p>
+  <p><code>msg.authProtocol</code> - (For SNMP V3 only) Defines the authentication protocol used to verify the integrity and authenticity of the messages. This setting determines the method by which the <code>msg.authkey</code> is applied to secure the communication. Common options include MD5 (Message-Digest Algorithm 5) and SHA (Secure Hash Algorithm), which provide a way to check that the message has not been altered, thereby safeguarding the integrity of the SNMP communication.</p>
+  <p><code>msg.authKey</code> - (For SNMP V3 only) The key for digest-based message integrity.</p>
+  <p><code>msg.privProtocol</code> - (For SNMP V3 only) Specifies the encryption protocol used for securing messages. Common protocols include DES (Data Encryption Standard) and AES (Advanced Encryption Standard). This setting determines how the <code>msg.privkey</code> is utilized to encrypt SNMP V3 messages, ensuring the confidentiality of the data exchanged between the SNMP manager and the agent.</p>
+  <p><code>msg.privKey</code> - (For SNMP V3 only) The key for message encryption.</p>
+  <p><code>msg.oid</code> - The base OID from which the subtree fetching begins.</p>
+  <p><b>OID Format</b>: The base OID needs to be numeric. Using "iso." is equivalent to using "1" in OID notation.</p>
+  <p><b>Output</b>: The tool provides the following outputs after a successful fetch:</p>
+  <p><code>msg.payload</code> - Contains the fetched OID subtree data.</p>
+  <p><code>msg.oid</code> - The base OID used to initiate the fetch.</p>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("SNMP Subtree", {
+    category: "network",
+    color: "#faffbf",
+    defaults: {
+      host: {
+        value: "127.0.0.1"
+      },
+      port: {
+        value: "161"
+      },
+      version: {
+        value: "v2c",
+        required: true
+      },
+      timeout: {
+        value: 5
+      },
+      community: {
+        value: "public"
+      },
+      auth: {
+        value: "",
+        required: true
+      },
+      authprot: {
+        value: "MD5",
+        required: true
+      },
+      privprot: {
+        value: "DES",
+        required: true
+      },
+      name: {
+        value: ""
+      },
+      username: {
+        value: ""
+      },
+      authkey: {
+        value: ""
+      },
+      privkey: {
+        value: ""
+      },
+      oid: {
+        value: ""
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "icon.png",
+    label: function () {
+      return this.name || "SNMP Subtree";
+    },
+    oneditprepare: function () {
+      uByteInitializeSNMPConfig(this);
+      $("#node-input-version").change(function () {
+        uByteSNMPVersionUI(this.value)
+      });
+      $("#node-input-auth").change(function () {
+        const value = $("#node-input-version").val();
+        uByteSNMPAuthUI(value, this.value)
+      });
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="SNMP Walker">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
+    <input type="text" id="node-input-host" placeholder="ip address" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Port</label>
+    <input type="text" id="node-input-port" placeholder="161" style="width:58px" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-version"><i class="fa fa-bookmark"></i> Version</label>
+    <select type="text" id="node-input-version" style="width:180px">
+      <option value="v1">v1</option>
+      <option value="v2c">v2c</option>
+      <option value="v3">v3</option>
+    </select>
+    <label for="node-input-timeout" style="width:75px;text-align:right">Timeout</label>
+    <input type="text" id="node-input-timeout" placeholder="sec" style="width:58px" />
+  </div>
+  <div class="form-row  node-red-ubyte-snmp-row-snmpv1v2">
+    <label for="node-input-community"><i class="fa fa-user"></i> Community</label>
+    <input type="text" id="node-input-community" placeholder="public" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username" placeholder="username" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3">
+    <label for="node-input-auth"><i class="fa fa-user-secret"></i> Auth.</label>
+    <select type="text" id="node-input-auth" style="width:180px">
+      <option value="noAuthNoPriv">noAuthNoPriv</option>
+      <option value="authNoPriv">authNoPriv</option>
+      <option value="authPriv">authPriv</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authProtocol"><i class="fa fa-shield"></i> Auth.Prot.</label>
+    <select type="text" id="node-input-authProtocol" style="width:180px">
+      <option value="MD5">MD5</option>
+      <option value="SHA">SHA</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-auth">
+    <label for="node-input-authKey"><i class="fa fa-key"></i> Auth.Key</label>
+    <input type="password" id="node-input-authKey" placeholder="Authentication key" />
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privProtocol"><i class="fa fa-shield"></i> Priv.Prot.</label>
+    <select type="text" id="node-input-privProtocol" style="width:180px">
+      <option value="DES">DES</option>
+      <option value="AES">AES</option>
+    </select>
+  </div>
+  <div class="form-row node-red-ubyte-snmp-row-snmpv3 node-red-ubyte-snmp-row-snmpv3-priv">
+    <label for="node-input-privKey"><i class="fa fa-key"></i> Priv.Key</label>
+    <input type="password" id="node-input-privKey" placeholder="Encryption key" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-oid"><i class="fa fa-tags"></i> OID</label>
+    <input type="text" id="node-input-oid" placeholder="e.g. 1.3.6.1.2.1.1.5.0" />
+  </div>
+  <div class="form-tips">Tip: ONLY accepts a single OID (node).</div>
+</script>
+
+<script type="text/html" data-help-name="SNMP Walker">
+  <p><b>SNMP Walker Tool Documentation</b></p>
+  <p><b>Description</b>: The SNMP Walker Tool is crafted to fetch all nodes from a specified start OID to the end of an SNMP table. Activated by any input, it offers a thorough method for exploring the OID tree on SNMP-enabled devices.</p>
+  <p><b>Activation and Functionality</b>: Upon any input, the tool commences a "walk" from the specified starting OID, capturing all subsequent nodes to the end of the table.</p>
+  <p><b>Input Parameters</b>:</p>
+  <p><code>msg.host</code> - The network host address.</p>
+  <p><code>msg.port</code> - The network port.</p>
+  <p><code>msg.community</code> - The SNMP community string.</p>
+  <p><code>msg.username</code> - (For SNMP V3 only) Username for authentication.</p>
+  <p><code>msg.auth</code> - (For SNMP V3 only) Specifies the security level for SNMP V3 communication. The options include 'noAuthNoPriv', 'authNoPriv', and 'authPriv'. 'noAuthNoPriv' indicates that no authentication and no encryption are applied. 'authNoPriv' applies authentication for message integrity without encryption, using the specified <code>msg.authProtocol</code> and <code>msg.authkey</code>. 'authPriv' adds encryption to authentication, utilizing both the <code>msg.authProtocol</code> with <code>msg.authkey</code> for authentication and the <code>msg.privProtocol</code> with <code>msg.privkey</code> for message encryption, ensuring both the integrity and confidentiality of the SNMP messages.</p>
+  <p><code>msg.authProtocol</code> - (For SNMP V3 only) Defines the authentication protocol used to verify the integrity and authenticity of the messages. This setting determines the method by which the <code>msg.authkey</code> is applied to secure the communication. Common options include MD5 (Message-Digest Algorithm 5) and SHA (Secure Hash Algorithm), which provide a way to check that the message has not been altered, thereby safeguarding the integrity of the SNMP communication.</p>
+  <p><code>msg.authKey</code> - (For SNMP V3 only) The key for digest-based message integrity.</p>
+  <p><code>msg.privProtocol</code> - (For SNMP V3 only) Specifies the encryption protocol used for securing messages. Common protocols include DES (Data Encryption Standard) and AES (Advanced Encryption Standard). This setting determines how the <code>msg.privkey</code> is utilized to encrypt SNMP V3 messages, ensuring the confidentiality of the data exchanged between the SNMP manager and the agent.</p>
+  <p><code>msg.privKey</code> - (For SNMP V3 only) The key for message encryption.</p>
+  <p><code>msg.oid</code> - The starting OID for the walk.</p>
+  <p><b>OID Format and Behavior</b>: The OID must be numeric, "iso." is equivalent to "1". This tool's "walking" behavior provides a unique approach to OID tree traversal, distinct from traditional command-line snmpwalk applications.</p>
+  <p><b>Output</b>: The tool provides the following output:</p>
+  <p><code>msg.payload</code> - The data fetched from the OID tree.</p>
+  <p><code>msg.oid</code> - The starting OID used for the walk.</p>
+  <p><b>Example of usage:</b></p>
+  <pre>
+  {
+    "host": "192.168.1.1",
+    "community": "public",
+    "oid": "1.3.6.1.2.1.1"
+  }
+  </pre>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("SNMP Walker", {
+    category: "network",
+    color: "#faffbf",
+    defaults: {
+      host: {
+        value: "127.0.0.1"
+      },
+      port: {
+        value: "161"
+      },
+      version: {
+        value: "v2c",
+        required: true
+      },
+      timeout: {
+        value: 5
+      },
+      community: {
+        value: "public"
+      },
+      auth: {
+        value: "",
+        required: true
+      },
+      authprot: {
+        value: "MD5",
+        required: true
+      },
+      privprot: {
+        value: "DES",
+        required: true
+      },
+      name: {
+        value: ""
+      },
+      username: {
+        value: ""
+      },
+      authkey: {
+        value: ""
+      },
+      privkey: {
+        value: ""
+      },
+      oid: {
+        value: ""
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "icon.png",
+    label: function () {
+      return this.name || "SNMP Walker";
+    },
+    oneditprepare: function () {
+      uByteInitializeSNMPConfig(this);
+      $("#node-input-version").change(function () {
+        uByteSNMPVersionUI(this.value)
+      });
+      $("#node-input-auth").change(function () {
+        const value = $("#node-input-version").val();
+        uByteSNMPAuthUI(value, this.value)
+      });
+    }
+  });
+</script>
