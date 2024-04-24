@@ -30,6 +30,10 @@
     category: "network",
     color: "#faffbf",
     defaults: {
+      debug: {
+        value: "0",
+        required: true
+      },
       host: {
         value: "127.0.0.1"
       },
@@ -96,7 +100,13 @@
 <script type="text/html" data-template-name="SNMP">
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name" />
+    <input type="text" id="node-input-name" placeholder="Name" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Debug</label>
+    <select type="text" id="node-input-debug" style="width:58px">
+      <option value="9">no</option>
+      <option value="1">Warning</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
@@ -168,6 +178,7 @@
   <p><b>Description</b>: This document offers an in-depth look at the SNMP OID Fetcher Tool, tailored for retrieving SNMP Object Identifiers (OIDs) or lists of OIDs, based on detailed input parameters.</p>
   <p><b>How It Works</b>: Activated by any input, the tool processes the provided parameters to fetch the specified OIDs.</p>
   <p><b>Input Parameters</b>:</p>
+  <p><code>msg.debug</code> - The Debug options: no, all, warning.</p>
   <p><code>msg.host</code> - The network host address.</p>
   <p><code>msg.port</code> - The network port.</p>
   <p><code>msg.community</code> - The SNMP community string.</p>
@@ -183,9 +194,15 @@
 </script>
 
 <script type="text/html" data-template-name="SNMP Set">
-  <div class="form-row">
+  <<div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name" />
+    <input type="text" id="node-input-name" placeholder="Name" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Debug</label>
+    <select type="text" id="node-input-debug" style="width:58px">
+      <option value="9">no</option>
+      <option value="1">Warning</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
@@ -259,6 +276,7 @@
   <p><b>Description</b>: This document provides details on the SNMP Set Tool, designed for setting specific values on network devices via SNMP. Triggered by any form of input, it utilizes various parameters to conduct SNMP SET operations effectively.</p>
   <p><b>Usage</b>: Activated by input triggers, this tool facilitates modifications to device settings using SNMP OIDs.</p>
   <p><b>Input Parameters</b>:</p>
+  <p><code>msg.debug</code> - The Debug options: no, all, warning.</p>
   <p><code>msg.host</code> - The network host address.</p>
   <p><code>msg.port</code> - The network port.</p>
   <p><code>msg.community</code> - Defines the SNMP community string for access.</p>
@@ -278,6 +296,10 @@
     category: "network",
     color: "#faffbf",
     defaults: {
+      debug: {
+        value: "0",
+        required: true
+      },
       host: {
         value: "127.0.0.1"
       },
@@ -344,7 +366,13 @@
 <script type="text/html" data-template-name="SNMP Table">
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name" />
+    <input type="text" id="node-input-name" placeholder="Name" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Debug</label>
+    <select type="text" id="node-input-debug" style="width:58px">
+      <option value="9">no</option>
+      <option value="1">Warning</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
@@ -412,6 +440,7 @@
   <p><b>Description</b>: This guide details the SNMP OID Table Fetcher Tool, which is designed to retrieve complete tables of SNMP Object Identifiers (OIDs) based on specified inputs.</p>
   <p><b>Activation</b>: The tool is initiated by any input, offering a responsive and straightforward activation mechanism.</p>
   <p><b>Input Parameters</b>:</p>
+  <p><code>msg.debug</code> - The Debug options: no, all, warning.</p>
   <p><code>msg.host</code> - The network host address.</p>
   <p><code>msg.port</code> - The network port.</p>
   <p><code>msg.community</code> - Defines the SNMP community string for access control.</p>
@@ -433,6 +462,10 @@
     category: "network",
     color: "#faffbf",
     defaults: {
+      debug: {
+        value: "0",
+        required: true
+      },
       host: {
         value: "127.0.0.1"
       },
@@ -499,7 +532,13 @@
 <script type="text/html" data-template-name="SNMP Subtree">
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name" />
+    <input type="text" id="node-input-name" placeholder="Name" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Debug</label>
+    <select type="text" id="node-input-debug" style="width:58px">
+      <option value="9">no</option>
+      <option value="1">Warning</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
@@ -567,6 +606,7 @@
   <p><b>Description</b>: This guide introduces the SNMP OID Subtree Fetcher Tool, crafted to query and collect all SNMP Object Identifiers (OIDs) starting from a specified base OID, including all subsequent OIDs in the subtree.</p>
   <p><b>Activation and Operation</b>: Activated by any input, this tool begins fetching operations for the specified OID subtree upon receiving a trigger.</p>
   <p><b>Input Parameters</b>:</p>
+  <p><code>msg.debug</code> - The Debug options: no, all, warning.</p>
   <p><code>msg.host</code> - The network host address.</p>
   <p><code>msg.port</code> - The network port.</p>
   <p><code>msg.community</code> - The SNMP community string used for access control.</p>
@@ -588,6 +628,10 @@
     category: "network",
     color: "#faffbf",
     defaults: {
+      debug: {
+        value: "0",
+        required: true
+      },
       host: {
         value: "127.0.0.1"
       },
@@ -654,7 +698,13 @@
 <script type="text/html" data-template-name="SNMP Walker">
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name" />
+    <input type="text" id="node-input-name" placeholder="Name" style="width:180px" />
+    <label for="node-input-port" style="width:75px;text-align:right">Debug</label>
+    <select type="text" id="node-input-debug" style="width:58px">
+      <option value="9">no</option>
+      <option value="1">Warning</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-host"><i class="fa fa-globe"></i> Host</label>
@@ -722,6 +772,7 @@
   <p><b>Description</b>: The SNMP Walker Tool is crafted to fetch all nodes from a specified start OID to the end of an SNMP table. Activated by any input, it offers a thorough method for exploring the OID tree on SNMP-enabled devices.</p>
   <p><b>Activation and Functionality</b>: Upon any input, the tool commences a "walk" from the specified starting OID, capturing all subsequent nodes to the end of the table.</p>
   <p><b>Input Parameters</b>:</p>
+  <p><code>msg.debug</code> - The Debug options: no, all, warning.</p>
   <p><code>msg.host</code> - The network host address.</p>
   <p><code>msg.port</code> - The network port.</p>
   <p><code>msg.community</code> - The SNMP community string.</p>
@@ -751,6 +802,10 @@
     category: "network",
     color: "#faffbf",
     defaults: {
+      debug: {
+        value: "0",
+        required: true
+      },
       host: {
         value: "127.0.0.1"
       },

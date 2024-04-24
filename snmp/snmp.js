@@ -116,8 +116,10 @@ module.exports = function (RED) {
         configureV3Security(sessionOptions, msg, node);
         break;
       default:
+        // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+        const debug = msg.debug || node.debug || "0";
+        if (2 > parseInt(debug)) node.warn("Unsupported SNMP version specified. Using SNMP Version2c as default.");
         // Default to Version2c if unspecified.
-        node.warn("Unsupported SNMP version specified. Using SNMP Version2c as default.");
         sessionOptions.options.version = SNMP.Version2c;
     }
     // Determine and set the IP transport version.
@@ -263,33 +265,35 @@ module.exports = function (RED) {
       const { host, sessionid, user, options } = prepareSnmpOptions(node, msg);
       // Determine the OIDs to query, preferring the message payload over node configuration.
       const oids = msg.oids || node.oids;
+      // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+      const debug = msg.debug || node.debug || "0";
       // Proceed only if there are OIDs specified.
       if (oids) {
         // Open an SNMP session using the prepared options.
         let session = openSession(sessionid, host, user, options);
         if (session === null) {
           // Log the error to the Node-RED debug pane.
-          node.error("A session could not be established");
+          if (1 > parseInt(debug)) node.error("A session could not be established");
           return;
         }
         // Handle session errors gracefully.
         session.on("error", function (e) {
           // Log any errors that occur during the session.
-          node.error(e);
+          if (1 > parseInt(debug)) node.error(e);
         });
         // Perform the SNMP 'get' operation using the specified OIDs.
         const oidssplit = OIDClean(oids).split(String.fromCharCode(44));
         session.get(oidssplit, function (error, varbinds) {
           if (error) {
             // Handle SNMP errors by logging them.
-            node.error(error.toString());
+            if (1 > parseInt(debug)) node.error(error.toString());
           } else {
             // Process each variable binding received in response.
             for (let i = 0; i < varbinds.length; i++) {
               let varbind = varbinds[i];
               if (SNMP.isVarbindError(varbind)) {
                 // Check for and handle errors specific to the variable binding.
-                node.error(SNMP.varbindError(varbind));
+                if (1 > parseInt(debug)) node.error(SNMP.varbindError(varbind));
               }
               // Annotate the variable binding with a human-readable type string.
               varbind.tstr = SNMP.ObjectType[varbind.type];
@@ -305,7 +309,7 @@ module.exports = function (RED) {
         });
       } else {
         // Warn if no OIDs were specified for querying.
-        node.warn("No OID(s) to search for");
+        if (2 > parseInt(debug)) node.warn("No OID(s) to search for");
       }
     });
   }
@@ -326,6 +330,8 @@ module.exports = function (RED) {
     if (typeof node.varbinds !== 'string'
       || 0 === node.varbinds.trim().length) delete node.varbinds;
     node.on("input", function (msg, send, done) {
+      // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+      const debug = msg.debug || node.debug || "0";
       // Prepare SNMP session options based on the incoming message and the node configuration.
       const { host, sessionid, user, options } = prepareSnmpOptions(node, msg);
       // Determine the varbinds to use for the SNMP Set operation, preferring the node configuration over the message payload.
@@ -341,24 +347,24 @@ module.exports = function (RED) {
         let session = openSession(sessionid, host, user, options);
         if (session === null) {
           // Log the error to the Node-RED debug pane.
-          node.error("A session could not be established");
+          if (1 > parseInt(debug)) node.error("A session could not be established");
           return;
         }
         // Handle session errors.
         session.on("error", function (e) {
           // Log any errors that occur during the session.
-          node.error(e);
+          if (1 > parseInt(debug)) node.error(e);
         });
         // Execute the SNMP Set operation with the specified varbinds.
         session.set(varbinds, function (error, varbinds) {
           if (error) {
             // If there's an error in setting, log it.
-            node.error(error.toString());
+            if (1 > parseInt(debug)) node.error(error.toString());
           } else {
             // Check the response varbinds for errors.
             for (let i = 0; i < varbinds.length; i++) {
               if (!SNMP.isVarbindError(varbinds[i])) continue;
-              node.error(SNMP.varbindError(varbinds[i]));
+              if (1 > parseInt(debug)) node.error(SNMP.varbindError(varbinds[i]));
             }
           }
           // Close the session after the operation is complete.
@@ -367,7 +373,7 @@ module.exports = function (RED) {
         });
       } else {
         // Warn if there are no varbinds specified for the SNMP Set operation.
-        node.warn("No varbinds to set");
+        if (2 > parseInt(debug)) node.warn("No varbinds to set");
       }
     });
   }
@@ -388,6 +394,8 @@ module.exports = function (RED) {
       const { host, sessionid, user, options } = prepareSnmpOptions(node, msg);
       // Determine the OID to use, preferring message payload over node configuration.
       const oid = msg.oid || node.oid;
+      // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+      const debug = msg.debug || node.debug || "0";
       // Proceed only if OID are provided.
       if (oid) {
         // Set a fixed number for maxRepetitions in the SNMP Table operation, used for bulk retrieval.
@@ -396,20 +404,20 @@ module.exports = function (RED) {
         let session = openSession(sessionid, host, user, options);
         if (session === null) {
           // Log the error to the Node-RED debug pane.
-          node.error("A session could not be established");
+          if (1 > parseInt(debug)) node.error("A session could not be established");
           return;
         }
         // Handle session errors.
         session.on("error", function (e) {
           // Log any errors that occur during the session.
-          node.error(e);
+          if (1 > parseInt(debug)) node.error(e);
         });
         // Execute the SNMP Table operation.
         const oidclean = OIDClean(oid);
         session.table(oidclean, maxRepetitions, function (error, table) {
           if (error) {
             // Log and handle any errors that occur during table retrieval.
-            node.error(error.toString());
+            if (1 > parseInt(debug)) node.error(error.toString());
           } else {
             // Send the table as payload in the output message.
             msg.payload = table;
@@ -421,7 +429,7 @@ module.exports = function (RED) {
         });
       } else {
         // Warn if no OID were provided for the SNMP Table operation.
-        node.warn("No OID to search for");
+        if (2 > parseInt(debug)) node.warn("No OID to search for");
       }
     });
   }
@@ -442,6 +450,8 @@ module.exports = function (RED) {
       const { host, sessionid, user, options } = prepareSnmpOptions(node, msg);
       // Determine the OID to use, preferring the message payload over node configuration.
       const oid = msg.oid || node.oid;
+      // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+      const debug = msg.debug || node.debug || "0";
       // Proceed only if OID are provided.
       if (oid) {
         // Prepare an array to collect the response and set a fixed number for maxRepetitions for bulk retrieval.
@@ -452,7 +462,7 @@ module.exports = function (RED) {
           for (let i = 0; i < varbinds.length; i++) {
             if (SNMP.isVarbindError(varbinds[i])) {
               // Handle any errors encountered for individual varbinds.
-              node.error(SNMP.varbindError(varbinds[i]));
+              if (1 > parseInt(debug)) node.error(SNMP.varbindError(varbinds[i]));
               continue;
             }
             // Accumulate successful varbind results in the response array.
@@ -466,20 +476,20 @@ module.exports = function (RED) {
         let session = openSession(sessionid, host, user, options);
         if (session === null) {
           // Log the error to the Node-RED debug pane.
-          node.error("A session could not be established");
+          if (1 > parseInt(debug)) node.error("A session could not be established");
           return;
         }
         // Handle session errors.
         session.on("error", function (e) {
           // Log any errors that occur during the session.
-          node.error(e);
+          if (1 > parseInt(debug)) node.error(e);
         });
         // Execute the SNMP Subtree operation.
         const oidclean = OIDClean(oid);
         session.subtree(oidclean, maxRepetitions, feedCb, function (error) {
           if (error) {
             // Log and handle any errors that occur during the subtree retrieval.
-            node.error(error.toString());
+            if (1 > parseInt(debug)) node.error(error.toString());
           } else {
             // Send the collected response data as the payload in the output message.
             msg.payload = response;
@@ -491,7 +501,7 @@ module.exports = function (RED) {
         });
       } else {
         // Warn if no OID were provided for the SNMP Subtree operation.
-        node.warn("No OID to search");
+        if (2 > parseInt(debug)) node.warn("No OID to search");
       }
     });
   }
@@ -512,6 +522,8 @@ module.exports = function (RED) {
       const { host, sessionid, user, options } = prepareSnmpOptions(node, msg);
       // Determine the OID to use, preferring message payload over node configuration.
       const oid = msg.oid || node.oid;
+      // Defines a constant string variable debug with a value: "0", "1" or "9". Default value is "0"
+      const debug = msg.debug || node.debug || "0";
       // Proceed only if OID are provided.
       if (oid) {
         // Prepare an array to collect the response and set a fixed number for maxRepetitions for bulk retrieval.
@@ -522,7 +534,7 @@ module.exports = function (RED) {
           for (let i = 0; i < varbinds.length; i++) {
             if (SNMP.isVarbindError(varbinds[i])) {
               // Handle any errors encountered for individual varbinds.
-              node.error(SNMP.varbindError(varbinds[i]));
+              if (1 > parseInt(debug)) node.error(SNMP.varbindError(varbinds[i]));
               continue;
             }
             // Accumulate successful varbind results in the response array.
@@ -536,20 +548,20 @@ module.exports = function (RED) {
         let session = openSession(sessionid, host, user, options);
         if (session === null) {
           // Log the error to the Node-RED debug pane.
-          node.error("A session could not be established");
+          if (1 > parseInt(debug)) node.error("A session could not be established");
           return;
         }
         // Handle session errors.
         session.on("error", function (e) {
           // Log any errors that occur during the session.
-          node.error(e);
+          if (1 > parseInt(debug)) node.error(e);
         });
         // Execute the SNMP Walk operation.
         const oidclean = OIDClean(oid);
         session.walk(oidclean, maxRepetitions, feedCb, function (error) {
           if (error) {
             // Log and handle any errors that occur during the walk.
-            node.error(error.toString());
+            if (1 > parseInt(debug)) node.error(error.toString());
           } else {
             // Send the collected response data as the payload in the output message.
             msg.payload = response;
@@ -561,7 +573,7 @@ module.exports = function (RED) {
         });
       } else {
         // Warn if no OID were provided for the SNMP Walk operation.
-        node.warn("No OID to search for");
+        if (2 > parseInt(debug)) node.warn("No OID to search for");
       }
     });
   }
